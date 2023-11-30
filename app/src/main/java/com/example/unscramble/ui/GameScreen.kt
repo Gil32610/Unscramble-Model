@@ -88,7 +88,8 @@ fun GameScreen(
             onUserGuessChanged = {gameViewModel.updateUserGuess(it)},
             onKeyboardDone = {gameViewModel.checkUserGuess()},
             userGuess = gameViewModel.userGuess,
-            isGuessWrong = gameUiState.isGuessedWrong
+            isGuessWrong = gameUiState.isGuessedWrong,
+            wordCount = gameUiState.currentWordCount
         )
         Column(
             modifier = Modifier
@@ -109,7 +110,7 @@ fun GameScreen(
             }
 
             OutlinedButton(
-                onClick = { },
+                onClick = {gameViewModel.skipWord() },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -119,14 +120,18 @@ fun GameScreen(
             }
         }
 
-        GameStatus(score = 0, modifier = Modifier.padding(20.dp))
+        GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
     }
 }
 
 
 
 @Composable
-fun GameStatus(score: Int, modifier: Modifier = Modifier) {
+fun GameStatus(
+    score: Int,
+    modifier: Modifier = Modifier,
+)
+{
     Card(
         modifier = modifier
     ) {
@@ -141,6 +146,8 @@ fun GameStatus(score: Int, modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameLayout(
+    wordCount: Int,
+
     currentScrambledWord: String,
     isGuessWrong: Boolean,
     userGuess: String,
@@ -165,7 +172,7 @@ fun GameLayout(
                     .background(colorScheme.surfaceTint)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
                     .align(alignment = Alignment.End),
-                text = stringResource(R.string.word_count, 0),
+                text = stringResource(R.string.word_count,wordCount),
                 style = typography.titleMedium,
                 color = colorScheme.onPrimary
             )
@@ -179,6 +186,7 @@ fun GameLayout(
                 style = typography.titleMedium
             )
             OutlinedTextField(
+                isError=isGuessWrong,
                 value = userGuess,
                 singleLine = true,
                 shape = shapes.large,
@@ -196,7 +204,7 @@ fun GameLayout(
                         Text(stringResource(R.string.enter_your_word))
                     }
                 },
-                isError = isGuessWrong,
+
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done
                 ),
