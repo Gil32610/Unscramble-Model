@@ -30,6 +30,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
@@ -83,7 +84,7 @@ fun GameScreen(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(mediumPadding),
-            currentScrambleWord = gameUiState.currentScrambleWord,
+            currentScrambledWord = gameUiState.currentScrambleWord,
             onUserGuessChanged = {gameViewModel.updateUserGuess(it)},
             onKeyboardDone = {gameViewModel.checkUserGuess()},
             userGuess = gameViewModel.userGuess,
@@ -137,16 +138,16 @@ fun GameStatus(score: Int, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameLayout(
-    modifier: Modifier = Modifier,
-    currentScrambleWord:String,
-    onKeyboardDone: ()-> Unit,
-    onUserGuessChanged: (String) -> Unit,
-    userGuess: String,
+    currentScrambledWord: String,
     isGuessWrong: Boolean,
-    )
-{
+    userGuess: String,
+    onUserGuessChanged: (String) -> Unit,
+    onKeyboardDone: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
 
     Card(
@@ -164,12 +165,12 @@ fun GameLayout(
                     .background(colorScheme.surfaceTint)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
                     .align(alignment = Alignment.End),
-                text = currentScrambleWord,
+                text = stringResource(R.string.word_count, 0),
                 style = typography.titleMedium,
                 color = colorScheme.onPrimary
             )
             Text(
-                text = "scrambleun",
+                text = currentScrambledWord,
                 style = typography.displayMedium
             )
             Text(
@@ -178,7 +179,6 @@ fun GameLayout(
                 style = typography.titleMedium
             )
             OutlinedTextField(
-                isError = isGuessWrong,
                 value = userGuess,
                 singleLine = true,
                 shape = shapes.large,
@@ -188,16 +188,21 @@ fun GameLayout(
                     unfocusedContainerColor = colorScheme.surface,
                     disabledContainerColor = colorScheme.surface,
                 ),
-                onValueChange = onUserGuessChanged ,
-                label = { Text(stringResource(R.string.enter_your_word)) },
-                isError = false,
+                onValueChange = onUserGuessChanged,
+                label = {
+                    if (isGuessWrong) {
+                        Text(stringResource(R.string.wrong_guess))
+                    } else {
+                        Text(stringResource(R.string.enter_your_word))
+                    }
+                },
+                isError = isGuessWrong,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
-                    onDone = { onKeyboardDone()}
-                ),
-
+                    onDone = { onKeyboardDone() }
+                )
             )
         }
     }
@@ -239,6 +244,13 @@ private fun FinalScoreDialog(
         }
     )
 }
+fun answerResult (isGuessWrong: Boolean): String{
+    if (isGuessWrong) {
+        return "Wrong Guess!"
+    } else {
+        return "Enter your word"
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -247,3 +259,5 @@ fun GameScreenPreview() {
         GameScreen()
     }
 }
+
+
